@@ -26,12 +26,6 @@ module radix_4_mul (
   logic [67:0] pos_2_multiplicand;
   logic [67:0] product;
 
-  // debug
-  logic [2:0] op;
-  logic [67:0] pos_1_sl_32;
-  assign pos_1_sl_32 = (pos_1_multiplicand) << (cnt << 1);
-  assign op = op_vector[2:0];
-
   assign mul_busy = (mul_state != MUL_WAIT_VALID);
   assign mul_out_valid = (mul_state == MUL_DONE);
   assign mul_out = !mul_type ? product[31:0] : product[63:32];
