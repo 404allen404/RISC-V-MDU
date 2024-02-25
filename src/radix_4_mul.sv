@@ -13,7 +13,7 @@ module radix_4_mul (
   output logic mul_busy
 );
 
-  enum bit [2:0] {MUL_WAIT_VALID, MUL_PRE_COMPUTE, MUL_COMPUTE, MUL_DONE} mul_state;
+  enum bit [1:0] {MUL_WAIT_VALID, MUL_PRE_COMPUTE, MUL_COMPUTE, MUL_DONE} mul_state;
 
   logic [34:0] neg_1_multiplicand_w;
   logic [5:0]  cnt;
