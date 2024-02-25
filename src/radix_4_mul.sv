@@ -16,7 +16,7 @@ module radix_4_mul (
   enum bit [2:0] {MUL_WAIT_VALID, MUL_PRE_COMPUTE, MUL_COMPUTE, MUL_DONE} mul_state;
 
   logic [34:0] neg_1_multiplicand_w;
-  logic [4:0]  cnt;
+  logic [5:0]  cnt;
   logic [34:0] op_vector;
   logic [33:0] real_multiplier;
   logic [33:0] real_multiplicand;
@@ -25,6 +25,12 @@ module radix_4_mul (
   logic [67:0] pos_1_multiplicand;
   logic [67:0] pos_2_multiplicand;
   logic [67:0] product;
+
+  // debug
+  logic [2:0] op;
+  logic [67:0] pos_1_sl_32;
+  assign pos_1_sl_32 = (pos_1_multiplicand) << (cnt << 1);
+  assign op = op_vector[2:0];
 
   assign mul_busy = (mul_state != MUL_WAIT_VALID);
   assign mul_out_valid = (mul_state == MUL_DONE);
@@ -54,7 +60,7 @@ module radix_4_mul (
       pos_2_multiplicand <= 68'd0;
       op_vector <= 35'd0;
       product <= 68'd0;
-      cnt <= 5'd0;
+      cnt <= 6'd0;
     end
     else if (mul_state == MUL_PRE_COMPUTE) begin
       neg_1_multiplicand <= {{33{neg_1_multiplicand_w[33]}}, neg_1_multiplicand_w};
@@ -63,10 +69,10 @@ module radix_4_mul (
       pos_2_multiplicand <= {{34{real_multiplicand[32]}}, real_multiplicand} << 1;
       op_vector <= {real_multiplier, 1'b0};
       product <= 68'd0;
-      cnt <= 5'd0;
+      cnt <= 6'd0;
     end
     else if (mul_state == MUL_COMPUTE) begin
-      cnt <= cnt + 5'd1;
+      cnt <= cnt + 6'd1;
       op_vector <= op_vector >> 2;
       case (op_vector[2:0])
         3'b010, 3'b001: product <= product + ((pos_1_multiplicand) << (cnt << 1));

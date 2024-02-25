@@ -44,6 +44,32 @@ async def mulh(dut, val1, val2):
   print('{} x {} = {} (decimal)'.format(val1, val2, val1 * val2))
   print('output = {} (binary)'.format(dut.mdu_out.value))
 
+async def mulhsu(dut, val1, val2):
+  await RisingEdge(dut.clk)
+  dut.mdu_in_valid.value = 1
+  dut.funct3.value = 2
+  dut.mdu_in_1.value = val1
+  dut.mdu_in_2.value = val2
+  await Timer(2, units='ns')
+  dut.mdu_in_valid.value = 0
+  await wait_answer(dut)
+  print('\nmulhsu test:')
+  print('{} x {} = {} (decimal)'.format(val1, val2, val1 * val2))
+  print('output = {} (binary)'.format(dut.mdu_out.value))
+
+async def mulhu(dut, val1, val2):
+  await RisingEdge(dut.clk)
+  dut.mdu_in_valid.value = 1
+  dut.funct3.value = 3
+  dut.mdu_in_1.value = val1
+  dut.mdu_in_2.value = val2
+  await Timer(2, units='ns')
+  dut.mdu_in_valid.value = 0
+  await wait_answer(dut)
+  print('\nmulhu test:')
+  print('{} x {} = {} (decimal)'.format(val1, val2, val1 * val2))
+  print('output = {} (binary)'.format(dut.mdu_out.value))
+
 @cocotb.test()
 async def mdu_test(dut):
   cocotb.start_soon(Clock(dut.clk, 1, units="ns").start())
@@ -60,4 +86,10 @@ async def mdu_test(dut):
   await mulh(dut, 10900, -100010)
   await mulh(dut, -180290, 10440)
   await mulh(dut, -233100, -171020)
+  print('\n')
+
+  await mulhsu(dut, 4294967295, 4294967295) # -1 * 4294967295
+  print('\n')
+
+  await mulhu(dut, 4294967295, 4294967295)
   print('\n')
