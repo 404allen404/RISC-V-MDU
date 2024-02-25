@@ -1,8 +1,4 @@
-`include "m_alu.sv"
-`include "d_alu.sv"
-`include "mdu_controller.sv"
-
-module (
+module mdu_top(
   /* input */
   input logic clk,
   input logic rst,
@@ -17,7 +13,7 @@ module (
   output logic mdu_busy
 );
 
-  logic funct3_r;
+  logic [2:0] funct3_r;
   logic m_wen;
   logic [63:0]  m_alu_out;
   logic [63:0]  multiplicand;
@@ -55,7 +51,7 @@ module (
         multiplicand <= {32'd0, mdu_in_1};
       end
       else begin // signed
-        multiplicand <= {{32{mdu_in_2[31]}}, mdu_in_2};
+        multiplicand <= {{32{mdu_in_2[31]}}, mdu_in_1};
       end
     end
   end
@@ -67,7 +63,7 @@ module (
     end
     else if (mdu_in_valid && ~funct3[2] && ~mdu_busy) begin
       if (funct3[1]) begin // unsigned
-        mul_res <= {64'd0, mdu_in_2};
+        mul_res <= {96'd0, mdu_in_2};
       end
       else begin // signed
         mul_res <= {64'd0, {32{mdu_in_2[31]}}, mdu_in_2};
@@ -88,7 +84,8 @@ module (
     .cpu_busy(cpu_busy),
     /* output */
     .m_wen(m_wen),
-    .mdu_busy(mdu_busy)
+    .mdu_busy(mdu_busy),
+    .mdu_out_valid(mdu_out_valid)
   );
 
   // m_alu
