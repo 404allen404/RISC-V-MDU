@@ -21,9 +21,9 @@ module radix_4_mul (
   logic [33:0] real_multiplier;
   logic [33:0] real_multiplicand;
   logic [67:0] neg_1_multiplicand;
-  logic [67:0] neg_2_multiplicand;
+  // logic [67:0] neg_2_multiplicand;
   logic [67:0] pos_1_multiplicand;
-  logic [67:0] pos_2_multiplicand;
+  // logic [67:0] pos_2_multiplicand;
   logic [67:0] product;
 
   assign mul_busy = (mul_state != MUL_WAIT_VALID);
@@ -49,18 +49,18 @@ module radix_4_mul (
   always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
       neg_1_multiplicand <= 68'd0;
-      neg_2_multiplicand <= 68'd0;
+      // neg_2_multiplicand <= 68'd0;
       pos_1_multiplicand <= 68'd0;
-      pos_2_multiplicand <= 68'd0;
+      // pos_2_multiplicand <= 68'd0;
       op_vector <= 35'd0;
       product <= 68'd0;
       cnt <= 6'd0;
     end
     else if (mul_state == MUL_PRE_COMPUTE) begin
-      neg_1_multiplicand <= {{33{neg_1_multiplicand_w[33]}}, neg_1_multiplicand_w};
-      neg_2_multiplicand <= {{33{neg_1_multiplicand_w[33]}}, neg_1_multiplicand_w} << 1;
-      pos_1_multiplicand <= {{34{real_multiplicand[32]}}, real_multiplicand};
-      pos_2_multiplicand <= {{34{real_multiplicand[32]}}, real_multiplicand} << 1;
+      neg_1_multiplicand <= {{33{neg_1_multiplicand_w[34]}}, neg_1_multiplicand_w};
+      // neg_2_multiplicand <= {{33{neg_1_multiplicand_w[34]}}, neg_1_multiplicand_w} << 1;
+      pos_1_multiplicand <= {{34{real_multiplicand[33]}}, real_multiplicand};
+      // pos_2_multiplicand <= {{34{real_multiplicand[33]}}, real_multiplicand} << 1;
       op_vector <= {real_multiplier, 1'b0};
       product <= 68'd0;
       cnt <= 6'd0;
@@ -72,8 +72,10 @@ module radix_4_mul (
         3'b010, 3'b001: product <= product + ((pos_1_multiplicand) << (cnt << 1));
         3'b110, 3'b101: product <= product + ((neg_1_multiplicand) << (cnt << 1));
         3'b111, 3'b000: product <= product;
-        3'b011:         product <= product + ((pos_2_multiplicand) << (cnt << 1));
-        3'b100:         product <= product + ((neg_2_multiplicand) << (cnt << 1));
+        // 3'b011:         product <= product + ((pos_2_multiplicand) << (cnt << 1));
+        3'b011:         product <= product + ((pos_1_multiplicand << 1) << (cnt << 1));
+        // 3'b100:         product <= product + ((neg_2_multiplicand) << (cnt << 1));
+        3'b100:         product <= product + ((neg_1_multiplicand << 1) << (cnt << 1));
       endcase
     end
   end
