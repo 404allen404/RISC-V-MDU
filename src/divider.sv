@@ -21,6 +21,7 @@ module divider (
   logic [4:0] cnt;
   logic divisor_sign;
   logic dividend_sign;
+  logic [1:0] div_type_r;
 
   logic exception_w;
   logic exception_cond_1; 
@@ -33,15 +34,25 @@ module divider (
 
   assign div_out_valid = (div_state == DIV_DONE);
   assign div_busy = (div_state != DIV_WAIT_VALID);
-  assign div_out = div_type[1] ? div_result[63:32] : div_result[31:0];
+  assign div_out = !div_type_r[1] ? div_result[31:0] : div_result[63:32];
   assign exception_cond_1 = (divisor_r == 32'd0);
-  assign exception_cond_2 = (!div_type[0] && div_result[31:0] == 32'h10000000 && divisor_r == 32'hffffffff);
+  assign exception_cond_2 = (!div_type_r[0] && div_result[31:0] == 32'h10000000 && divisor_r == 32'hffffffff);
   assign exception_w = (exception_cond_1 || exception_cond_2);
 
   assign div_result_1 = div_result << 1;
   assign div_result_2 = {alu_out[30:0], div_result[31:0], 1'b1};
 
-  always @(posedge clk or posedge rst) begin 
+  // div_type_r
+  always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+      div_type_r <= 2'd0;
+    end
+    else if (div_state == DIV_WAIT_VALID && div_in_valid) begin
+      div_type_r <= div_type;
+    end
+  end
+
+  always_ff @(posedge clk or posedge rst) begin 
     if (rst) begin
       div_state <= DIV_WAIT_VALID;
     end
@@ -58,7 +69,7 @@ module divider (
   end
 
   // divisor_r, divisor_sign
-  always_ff @ (posedge clk or posedge rst) begin
+  always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
       divisor_r <= 32'd0;
       divisor_sign <= 1'b0;
@@ -67,27 +78,27 @@ module divider (
       divisor_r <= divisor;
       divisor_sign <= 1'b0;
     end
-    else if (div_state == DIV_CONVERT_SIGN && !div_type[0] && divisor[31]) begin
+    else if (div_state == DIV_CONVERT_SIGN && !div_type_r[0] && divisor[31]) begin
       divisor_r <= ~divisor_r + 32'd1;
       divisor_sign <= 1'b1;
     end
   end
 
   // dividend_sign
-  always @ (posedge clk or posedge rst) begin
+  always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
       dividend_sign <= 1'b0;
     end
     else if (div_state == DIV_WAIT_VALID && div_in_valid) begin
       dividend_sign <= 1'b0;
     end
-    else if (div_state == DIV_CONVERT_SIGN && !div_type[0] && div_result[31]) begin
+    else if (div_state == DIV_CONVERT_SIGN && !div_type_r[0] && div_result[31]) begin
       dividend_sign <= 1'b1;
     end
   end
 
   // div_result
-  always_ff @ (posedge clk or posedge rst) begin
+  always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
       div_result <= 64'd0;
     end
@@ -102,8 +113,8 @@ module divider (
         div_result <= {32'd0, div_result[31:0]};
       end
     end
-    else if (div_state == DIV_CONVERT_SIGN && !div_type[0] && div_result[31]) begin
-      if (!div_type[0] && div_result[31]) begin
+    else if (div_state == DIV_CONVERT_SIGN) begin
+      if (!div_type_r[0] && div_result[31]) begin
         div_result <= {31'd0, ~div_result[31:0] + 32'd1, 1'b0};
       end
       else begin
@@ -118,7 +129,7 @@ module divider (
         div_result <= (cnt == 5'd31) ? {1'b0, div_result_2[31:1], div_result_2[31:0]} : div_result_2;
       end
     end
-    else if (div_state == DIV_ADJUST && !div_type[0]) begin
+    else if (div_state == DIV_ADJUST && !div_type_r[0]) begin
         case ({dividend_sign, divisor_sign})
           2'b01: div_result <= {div_result[63:32], ~div_result[31:0] + 32'd1};
           2'b10: div_result <= {~div_result[63:32] + 32'd1, ~div_result[31:0] + 32'd1};
@@ -128,7 +139,7 @@ module divider (
   end
 
   // exception
-  always_ff @ (posedge clk or posedge rst) begin
+  always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
       exception <= 1'b0;
     end
@@ -141,7 +152,7 @@ module divider (
   end
 
   // cnt
-  always_ff @ (posedge clk or posedge rst) begin
+  always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
       cnt <= 5'd0;
     end

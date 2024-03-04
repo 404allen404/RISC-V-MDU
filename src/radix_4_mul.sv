@@ -25,10 +25,21 @@ module radix_4_mul (
   logic [67:0] pos_1_multiplicand;
   // logic [67:0] pos_2_multiplicand;
   logic [67:0] product;
+  logic [1:0] mul_type_r;
 
   assign mul_busy = (mul_state != MUL_WAIT_VALID);
   assign mul_out_valid = (mul_state == MUL_DONE);
-  assign mul_out = !mul_type ? product[31:0] : product[63:32];
+  assign mul_out = !mul_type_r ? product[31:0] : product[63:32];
+
+  // mul_type_r
+  always_ff @(posedge clk or posedge rst) begin
+    if (rst) begin
+      mul_type_r <= 2'd0;
+    end
+    else if (mul_state == MUL_WAIT_VALID && mul_in_valid) begin
+      mul_type_r <= mul_type;
+    end
+  end
 
   // mul_state
   always_ff @(posedge clk or posedge rst) begin
