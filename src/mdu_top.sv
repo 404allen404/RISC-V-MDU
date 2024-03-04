@@ -10,7 +10,8 @@ module mdu_top(
   /* output */
   output logic [31:0] mdu_out,
   output logic mdu_out_valid,
-  output logic mdu_busy
+  output logic mdu_busy,
+  output logic exception
 );
 
   logic funct3_2_r;
@@ -70,7 +71,8 @@ module mdu_top(
     /* output */
     .div_out(div_out),
     .div_out_valid(div_out_valid),
-    .div_busy(div_busy)
+    .div_busy(div_busy),
+    .exception(exception)
   );
 
 endmodule
