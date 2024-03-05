@@ -123,10 +123,10 @@ module divider (
     end
     else if (div_state == DIV_COMPUTE) begin
       if (alu_out[31]) begin
-        div_result <= (cnt == 5'd31) ? {1'b0, div_result_1[31:1], div_result_1[31:0]} : div_result_1;
+        div_result <= (cnt == 5'd31) ? {1'b0, div_result_1[63:33], div_result_1[31:0]} : div_result_1;
       end
       else begin
-        div_result <= (cnt == 5'd31) ? {1'b0, div_result_2[31:1], div_result_2[31:0]} : div_result_2;
+        div_result <= (cnt == 5'd31) ? {1'b0, div_result_2[63:33], div_result_2[31:0]} : div_result_2;
       end
     end
     else if (div_state == DIV_ADJUST && !div_type_r[0]) begin

@@ -41,7 +41,8 @@ async def div(dut, val1, val2):
   dut.mdu_in_valid.value = 0
   await wait_answer(dut)
   print('\ndiv test:')
-  print('{} // {} = {} (decimal)'.format(val1, val2, val1 // val2))
+  print('{} // {} = ?'.format(val1, val2))
+  print('abs({}) // abs({}) = {} (decimal)'.format(val1, val2, abs(val1) // abs(val2)))
   print('output = {} (binary)'.format(dut.mdu_out.value))
 
 async def divu(dut, val1, val2):
@@ -54,9 +55,37 @@ async def divu(dut, val1, val2):
   dut.mdu_in_valid.value = 0
   await wait_answer(dut)
   print('\ndivu test:')
-  print('{} // {} = {} (decimal)'.format(val1, val2, val1 // val2))
+  print('{} // {} = ?'.format(val1, val2))
+  print('abs({}) // abs({}) = {} (decimal)'.format(abs(val1), abs(val2), abs(val1) // abs(val2)))
   print('output = {} (binary)'.format(dut.mdu_out.value))
 
+async def rem(dut, val1, val2):
+  await RisingEdge(dut.clk)
+  dut.mdu_in_valid.value = 1
+  dut.funct3.value = 6
+  dut.mdu_in_1.value = val1
+  dut.mdu_in_2.value = val2
+  await Timer(2, units='ns')
+  dut.mdu_in_valid.value = 0
+  await wait_answer(dut)
+  print('\nrem test:')
+  print('{} % {} = ?'.format(val1, val2))
+  print('abs({}) % abs({}) = {} (decimal)'.format(val1, val2, abs(val1) % abs(val2)))
+  print('output = {} (binary)'.format(dut.mdu_out.value))
+
+async def remu(dut, val1, val2):
+  await RisingEdge(dut.clk)
+  dut.mdu_in_valid.value = 1
+  dut.funct3.value = 7
+  dut.mdu_in_1.value = val1
+  dut.mdu_in_2.value = val2
+  await Timer(2, units='ns')
+  dut.mdu_in_valid.value = 0
+  await wait_answer(dut)
+  print('\nremu test:')
+  print('{} % {} = ?'.format(val1, val2))
+  print('abs({}) % abs({}) = {} (decimal)'.format(val1, val2, abs(val1) % abs(val2)))
+  print('output = {} (binary)'.format(dut.mdu_out.value))
 
 async def mulh(dut, val1, val2):
   await RisingEdge(dut.clk)
@@ -103,10 +132,17 @@ async def mdu_test(dut):
   reset_input(dut)
   await generate_rst(dut)
 
-  await div(dut, -72, 5)
-  await div(dut, 72, -5)
   await div(dut, 72, 5)
-  await divu(dut, 37, 4)
+  await div(dut, 72, -5)
+  await div(dut, -72, 5)
+  await div(dut, -72, -5)
+  print('\n')
+
+  await rem(dut, 72, 5)
+  await rem(dut, 72, -5)
+  await rem(dut, -72, 5)
+  await rem(dut, -72, -5)
+  print('\n')
 
   # await mul(dut, 20000, 10000)
   # await mul(dut, 10900, -100010)
