@@ -36,7 +36,7 @@ module divider (
   assign div_busy = (div_state != DIV_WAIT_VALID);
   assign div_out = !div_type_r[1] ? div_result[31:0] : div_result[63:32];
   assign exception_cond_1 = (divisor_r == 32'd0);
-  assign exception_cond_2 = (!div_type_r[0] && div_result[31:0] == 32'h10000000 && divisor_r == 32'hffffffff);
+  assign exception_cond_2 = (!div_type_r[0] && div_result[31:0] == 32'h80000000 && divisor_r == 32'hffffffff);
   assign exception_w = (exception_cond_1 || exception_cond_2);
 
   assign div_result_1 = div_result << 1;
@@ -144,7 +144,7 @@ module divider (
       exception <= 1'b0;
     end
     else if (div_state == DIV_DETECT_EXCEPTION) begin
-        exception <= exception_w;
+      exception <= exception_w;
     end
     else if (div_state == DIV_DONE && !cpu_busy) begin
       exception <= 1'b0;
